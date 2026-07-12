@@ -410,41 +410,68 @@ font-weight:600;
 }
 @media (max-width:480px){
 
-.logo-circle{
-    width:90px;
-    height:90px;
-    font-size:32px;
+.hero{
+    min-height:100dvh;
+    padding:20px 15px;
 }
 
-#loader h1{
-    font-size:24px;
-    letter-spacing:2px;
-    padding:0 15px;
-    line-height:1.4;
-    text-align:center;
-}
-
-#loaderText{
-    font-size:24px;
-    letter-spacing:1px;
-}
-
-#loaderSubText{
-    font-size:14px;
-    padding:0 20px;
-    text-align:center;
-}
-
-.loader-bar{
-    width:80%;
-    max-width:260px;
-}
-
-.loader-content{
+.glass{
     width:100%;
+    max-width:100%;
     padding:20px;
+    border-radius:20px;
 }
+
+.profile{
+    width:130px;
+    height:130px;
+    margin-bottom:20px;
 }
 
+h1{
+    font-size:28px;
+    line-height:1.4;
+}
 
+h2{
+    font-size:16px;
+}
 
+#typing{
+    font-size:15px;
+    height:24px;
+}
+
+.buttons{
+    flex-direction:column;
+    width:100%;
+    gap:12px;
+}
+
+.buttons a{
+    width:100%;
+}
+
+.scroll{
+    margin-top:25px;
+    font-size:26px;
+}
+
+.about{
+    padding:60px 15px;
+}
+
+.about-container{
+    padding:25px;
+}
+
+.about h2{
+    font-size:28px;
+}
+
+.about p{
+    font-size:16px;
+    line-height:1.8;
+}
+
+}
