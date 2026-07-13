@@ -1,138 +1,874 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>Shashidhar Chavan</title>
-
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
-
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" rel="stylesheet">
+<style>
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
 
-<link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet">
+:root {
+  --bg: #060610;
+  --cyan: #00d4ff;
+  --amber: #f59e0b;
+  --green: #00ff88;
+  --white: #f0f0f0;
+  --muted: #666;
+  --card-bg: rgba(255,255,255,0.045);
+  --border: rgba(255,255,255,0.10);
+}
 
-<link rel="stylesheet" href="style.css">
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--white);
+  font-family: 'Inter', sans-serif;
+  overflow-x: hidden;
+  min-height: 100dvh;
+}
 
+/* ══════════════════════════════════════
+   CANVAS BACKGROUND (floating symbols)
+══════════════════════════════════════ */
+#bgCanvas {
+  position: fixed; inset: 0;
+  z-index: -1; pointer-events: none;
+}
+
+/* Ambient glow layer */
+.bg-glow {
+  position: fixed; inset: 0; z-index: -2;
+  background:
+    radial-gradient(ellipse 90% 55% at 50% -5%, rgba(0,212,255,0.12) 0%, transparent 65%),
+    radial-gradient(ellipse 65% 45% at 5% 100%, rgba(245,158,11,0.08) 0%, transparent 60%),
+    radial-gradient(ellipse 55% 40% at 95% 75%, rgba(100,50,255,0.07) 0%, transparent 55%),
+    var(--bg);
+}
+
+/* ══════════════════════════════════════
+   LOADER — epic boot sequence
+══════════════════════════════════════ */
+#loader {
+  position: fixed; inset: 0; background: #000;
+  display: flex; flex-direction: column;
+  justify-content: center; align-items: center;
+  z-index: 9999;
+  transition: opacity 1s ease, visibility 1s ease;
+  overflow: hidden;
+}
+#loader.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+
+/* Comet orbit flares around loader content */
+.loader-comet {
+  position: absolute;
+  width: 3px; height: 3px;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 2;
+}
+.loader-comet::after {
+  content: '';
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 60px; height: 2px;
+  transform-origin: left center;
+  border-radius: 2px;
+}
+
+/* 3 comets orbit the loader box at different radii/speeds */
+.lc1 {
+  animation: cometOrbit1 3.5s linear infinite;
+  background: var(--cyan);
+  box-shadow: 0 0 8px 2px var(--cyan);
+}
+.lc1::after {
+  background: linear-gradient(90deg, rgba(0,212,255,0.7), transparent);
+  transform: translateY(-50%) rotate(180deg);
+}
+.lc2 {
+  animation: cometOrbit2 5s linear infinite;
+  background: var(--amber);
+  box-shadow: 0 0 8px 2px var(--amber);
+}
+.lc2::after {
+  background: linear-gradient(90deg, rgba(245,158,11,0.7), transparent);
+  transform: translateY(-50%) rotate(180deg);
+}
+.lc3 {
+  animation: cometOrbit3 4.2s linear infinite reverse;
+  background: #a855f7;
+  box-shadow: 0 0 8px 2px #a855f7;
+}
+.lc3::after {
+  background: linear-gradient(90deg, rgba(168,85,247,0.7), transparent);
+  transform: translateY(-50%) rotate(180deg);
+}
+
+@keyframes cometOrbit1 {
+  0%   { transform: translate(-50%,-50%) rotate(0deg)   translateX(155px); }
+  100% { transform: translate(-50%,-50%) rotate(360deg) translateX(155px); }
+}
+@keyframes cometOrbit2 {
+  0%   { transform: translate(-50%,-50%) rotate(120deg)  translateX(175px); }
+  100% { transform: translate(-50%,-50%) rotate(480deg)  translateX(175px); }
+}
+@keyframes cometOrbit3 {
+  0%   { transform: translate(-50%,-50%) rotate(240deg)  translateX(140px); }
+  100% { transform: translate(-50%,-50%) rotate(600deg)  translateX(140px); }
+}
+
+.loader-inner { position: relative; z-index: 3; text-align: center; }
+
+/* Photo ring */
+.loader-photo-ring {
+  position: relative; width: 120px; height: 120px;
+  margin: 0 auto 28px;
+}
+.loader-photo-ring::before {
+  content: '';
+  position: absolute; inset: -5px; border-radius: 50%;
+  background: conic-gradient(from 0deg, var(--cyan), var(--amber), #a855f7, var(--green), var(--cyan));
+  animation: loaderSpin 2s linear infinite; z-index: 0;
+}
+.loader-photo-ring::after {
+  content: '';
+  position: absolute; inset: 1px; border-radius: 50%;
+  background: #000; z-index: 1;
+}
+@keyframes loaderSpin { to { transform: rotate(360deg); } }
+
+.loader-photo {
+  width: 100%; height: 100%; border-radius: 50%;
+  object-fit: cover; position: relative; z-index: 2; display: block;
+}
+.loader-photo-fallback {
+  width: 100%; height: 100%; border-radius: 50%;
+  background: linear-gradient(135deg, rgba(0,212,255,0.2), rgba(245,158,11,0.2));
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 36px; font-weight: 700; color: var(--cyan);
+  position: relative; z-index: 2;
+}
+
+/* Glitch name */
+.loader-name {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 26px; font-weight: 700;
+  letter-spacing: 0.05em; margin-bottom: 4px;
+  animation: glitch 4s infinite;
+  position: relative;
+}
+.loader-name span { color: var(--cyan); }
+
+@keyframes glitch {
+  0%,94%,100% { text-shadow: none; transform: none; }
+  95% { text-shadow: -2px 0 var(--amber), 2px 0 var(--cyan); transform: translateX(1px); }
+  96% { text-shadow: 2px 0 var(--amber), -2px 0 var(--cyan); transform: translateX(-1px); }
+  97% { text-shadow: none; transform: none; }
+  98% { text-shadow: -1px 0 var(--green); transform: skewX(1deg); }
+}
+
+/* Terminal boot lines */
+.loader-terminal {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 12px; color: var(--green);
+  margin: 16px auto 20px;
+  text-align: left; width: 240px;
+  min-height: 72px;
+}
+.loader-terminal .tline {
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  white-space: nowrap; overflow: hidden;
+}
+.loader-terminal .tline.show { opacity: 1; }
+
+/* Progress bar */
+.loader-bar-wrap { margin-top: 4px; }
+.loader-track {
+  width: 240px; height: 3px;
+  background: rgba(255,255,255,0.07);
+  border-radius: 3px; overflow: hidden; margin: 0 auto 10px;
+}
+.loader-fill {
+  height: 100%; width: 0%;
+  background: linear-gradient(90deg, var(--cyan), var(--amber), var(--green));
+  border-radius: 3px;
+  box-shadow: 0 0 12px rgba(0,212,255,0.5);
+}
+.loader-pct {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 12px; color: var(--cyan);
+  letter-spacing: 2px;
+}
+
+/* ══════════════════════════════════════
+   HERO
+══════════════════════════════════════ */
+.hero {
+  min-height: 100dvh;
+  display: flex; flex-direction: column;
+  justify-content: center; align-items: center;
+  padding: 50px 18px 36px; position: relative;
+}
+
+.hero-card {
+  width: 100%; max-width: 400px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.11);
+  border-radius: 28px;
+  padding: 36px 26px 32px;
+  text-align: center; position: relative;
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  box-shadow:
+    0 0 0 1px rgba(0,212,255,0.06),
+    0 24px 70px rgba(0,0,0,0.55),
+    0 0 100px rgba(0,212,255,0.05),
+    inset 0 1px 0 rgba(255,255,255,0.07);
+  animation: heroFloat 5s ease-in-out infinite;
+}
+.hero-card::before {
+  content: '';
+  position: absolute; top: 0; left: 15%; right: 15%; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+  opacity: 0.7;
+}
+.hero-card::after {
+  content: '';
+  position: absolute; top: 20px; right: 20px;
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--cyan); box-shadow: 0 0 10px var(--cyan);
+  animation: dotPulse 2s ease-in-out infinite;
+}
+@keyframes heroFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+@keyframes dotPulse  { 0%,100%{opacity:1;box-shadow:0 0 10px var(--cyan)} 50%{opacity:.4;box-shadow:0 0 4px var(--cyan)} }
+
+/* Profile ring */
+.profile-ring {
+  position: relative; width: 140px; height: 140px;
+  margin: 0 auto 28px;
+}
+.profile-ring::before {
+  content: '';
+  position: absolute; inset: -4px; border-radius: 50%;
+  background: conic-gradient(from 0deg, var(--cyan), var(--amber), var(--cyan));
+  animation: spin 5s linear infinite; z-index: 0;
+}
+.profile-ring::after {
+  content: '';
+  position: absolute; inset: 0; border-radius: 50%;
+  background: rgba(6,6,16,1); z-index: 1;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.profile-img {
+  width: 100%; height: 100%; border-radius: 50%;
+  object-fit: cover; position: relative; z-index: 2; display: block;
+}
+.profile-fallback {
+  width:100%;height:100%;border-radius:50%;
+  background:linear-gradient(135deg,rgba(0,212,255,.15),rgba(245,158,11,.15));
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Space Grotesk',sans-serif;font-size:44px;font-weight:700;color:var(--cyan);
+  position:relative;z-index:2;
+}
+
+.hero-eyebrow {
+  font-size:11px;letter-spacing:3px;color:var(--amber);
+  text-transform:uppercase;font-family:'Space Grotesk',sans-serif;
+  margin-bottom:14px;opacity:0;animation:fadeUp .6s ease .15s forwards;
+}
+.hero-name {
+  font-family:'Space Grotesk',sans-serif;
+  font-size:clamp(30px,8.5vw,48px);font-weight:700;
+  line-height:1.1;letter-spacing:-.02em;margin-bottom:6px;
+  opacity:0;animation:fadeUp .6s ease .3s forwards;
+}
+.hero-name .accent { color:var(--cyan); }
+.hero-role {
+  font-size:13px;color:var(--muted);margin-bottom:22px;
+  opacity:0;animation:fadeUp .6s ease .45s forwards;
+}
+
+#typing-wrap {
+  height:26px;display:flex;align-items:center;justify-content:center;
+  margin-bottom:28px;opacity:0;animation:fadeUp .6s ease .6s forwards;
+}
+#typing { font-size:14px;color:var(--cyan);font-family:'Space Grotesk',sans-serif;font-weight:500; }
+.cursor {
+  display:inline-block;width:2px;height:16px;background:var(--cyan);
+  margin-left:3px;vertical-align:middle;animation:blink .8s step-end infinite;
+}
+@keyframes blink { 50%{opacity:0} }
+
+.hero-divider {
+  height:1px;margin:0 0 24px;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.08),transparent);
+  opacity:0;animation:fadeUp .4s ease .7s forwards;
+}
+
+/* Buttons */
+.cta-row {
+  display:flex;gap:10px;justify-content:center;flex-wrap:wrap;
+  margin-bottom:28px;opacity:0;animation:fadeUp .6s ease .8s forwards;
+}
+.btn {
+  text-decoration:none;display:inline-flex;align-items:center;gap:7px;
+  padding:12px 20px;border-radius:50px;font-size:13px;font-weight:500;
+  font-family:'Inter',sans-serif;transition:all .3s ease;
+  border:1px solid var(--border);color:var(--white);
+  background:rgba(255,255,255,.06);backdrop-filter:blur(8px);
+}
+.btn:hover,.btn:active {
+  transform:translateY(-3px);border-color:var(--cyan);color:var(--cyan);
+  box-shadow:0 8px 24px rgba(0,212,255,.18);background:rgba(0,212,255,.07);
+}
+.btn-yt:hover,.btn-yt:active {
+  border-color:#ff4444;color:#ff4444;
+  box-shadow:0 8px 24px rgba(255,68,68,.18);background:rgba(255,68,68,.07);
+}
+
+/* ── SCROLL HINT — animated arrow ── */
+.scroll-hint {
+  opacity:0;animation:fadeUp .6s ease 1s forwards;
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+}
+.scroll-hint-text {
+  font-size:11px;letter-spacing:2px;text-transform:uppercase;
+  color:var(--muted);font-family:'Space Grotesk',sans-serif;
+}
+.scroll-arrow-anim {
+  display:flex;flex-direction:column;align-items:center;gap:0;
+}
+.scroll-arrow-anim .sa-line {
+  width:1px;height:24px;
+  background:linear-gradient(180deg,transparent,var(--cyan));
+  animation:lineGrow 1.6s ease-in-out infinite;
+}
+.scroll-arrow-anim .sa-chevrons {
+  display:flex;flex-direction:column;align-items:center;gap:-2px;
+}
+.scroll-arrow-anim .sa-chevrons span {
+  display:block;width:10px;height:10px;
+  border-right:2px solid var(--cyan);border-bottom:2px solid var(--cyan);
+  transform:rotate(45deg);
+  animation:chevFade 1.6s ease-in-out infinite;
+}
+.scroll-arrow-anim .sa-chevrons span:nth-child(2) { animation-delay:.15s; opacity:.6; }
+.scroll-arrow-anim .sa-chevrons span:nth-child(3) { animation-delay:.3s; opacity:.3; }
+@keyframes lineGrow {
+  0%,100%{transform:scaleY(1);opacity:.7} 50%{transform:scaleY(1.3);opacity:1}
+}
+@keyframes chevFade {
+  0%,100%{transform:rotate(45deg) translateY(0)} 50%{transform:rotate(45deg) translateY(3px)}
+}
+
+.scroll-pill {
+  display:flex;align-items:center;gap:8px;
+  background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:50px;padding:7px 16px;
+  font-size:12px;color:#aaa;
+  font-family:'Space Grotesk',sans-serif;
+  margin-bottom:8px;
+}
+
+/* ══════════════════════════════════════
+   SECTIONS
+══════════════════════════════════════ */
+.section { padding:68px 18px; max-width:460px; margin:0 auto; }
+
+.section-eyebrow {
+  font-size:11px;letter-spacing:3px;text-transform:uppercase;
+  color:var(--cyan);font-family:'Space Grotesk',sans-serif;margin-bottom:14px;
+  opacity:0;transform:translateY(18px);transition:all .55s ease;
+}
+.section-title {
+  font-family:'Space Grotesk',sans-serif;
+  font-size:clamp(24px,7vw,34px);font-weight:700;
+  line-height:1.2;margin-bottom:24px;letter-spacing:-.02em;
+  opacity:0;transform:translateY(18px);transition:all .55s ease .08s;
+}
+.section-body {
+  opacity:0;transform:translateY(18px);transition:all .55s ease .16s;
+}
+.section.in-view .section-eyebrow,
+.section.in-view .section-title,
+.section.in-view .section-body { opacity:1;transform:translateY(0); }
+
+.section-divider {
+  height:1px;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.07),transparent);
+  max-width:460px;margin:0 auto;
+}
+
+/* About */
+.about-card {
+  background:var(--card-bg);border:1px solid var(--border);
+  border-radius:22px;padding:26px;position:relative;overflow:hidden;
+}
+.about-card::before {
+  content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(0,212,255,.4),transparent);
+}
+.about-card p { font-size:15px;line-height:1.85;color:#bbb;margin-bottom:16px; }
+.about-card p:last-child { margin-bottom:0; }
+.hl { color:var(--cyan);font-weight:600; }
+.hl-amber { color:var(--amber);font-weight:600; }
+.yt-link {
+  color:var(--amber);font-weight:700;text-decoration:none;
+  border-bottom:1px solid rgba(245,158,11,.4);
+  transition:all .2s ease;
+}
+.yt-link:hover { color:#fff;border-bottom-color:var(--amber); }
+
+/* Passion grid */
+.passion-grid { display:grid;grid-template-columns:1fr 1fr;gap:12px; }
+.passion-card {
+  background:var(--card-bg);border:1px solid var(--border);
+  border-radius:20px;padding:22px 18px;
+  transition:all .3s ease;position:relative;overflow:hidden;
+}
+.passion-card::after {
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  opacity:0;transition:opacity .3s ease;border-radius:2px 2px 0 0;
+}
+.passion-card.tech::after    { background:linear-gradient(90deg,var(--cyan),#0088cc); }
+.passion-card.cars::after    { background:linear-gradient(90deg,var(--amber),#e67e00); }
+.passion-card.mountains::after { background:linear-gradient(90deg,#7dd3fc,#3b82f6); }
+.passion-card.ai::after      { background:linear-gradient(90deg,#a78bfa,#7c3aed); }
+.passion-card:hover::after,.passion-card:active::after { opacity:1; }
+.passion-card:hover,.passion-card:active {
+  transform:translateY(-4px);border-color:rgba(255,255,255,.16);
+  box-shadow:0 14px 40px rgba(0,0,0,.35);
+}
+.passion-card.full { grid-column:1/-1; }
+.passion-icon { font-size:26px;margin-bottom:12px;display:block; }
+.passion-card.tech .passion-icon      { color:var(--cyan); }
+.passion-card.cars .passion-icon      { color:var(--amber); }
+.passion-card.mountains .passion-icon { color:#7dd3fc; }
+.passion-card.ai .passion-icon        { color:#a78bfa; }
+.passion-title { font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:600;margin-bottom:8px; }
+.passion-desc  { font-size:13px;color:var(--muted);line-height:1.6; }
+
+/* Skills */
+.skills-wrap { display:flex;flex-direction:column;gap:12px; }
+.skill-item {
+  background:var(--card-bg);border:1px solid var(--border);
+  border-radius:16px;padding:16px 18px;transition:border-color .3s ease;
+}
+.skill-item:hover { border-color:rgba(255,255,255,.18); }
+.skill-top { display:flex;justify-content:space-between;align-items:center;margin-bottom:10px; }
+.skill-name { font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:600; }
+.skill-pct  { font-size:12px;color:var(--muted);font-family:'Space Grotesk',sans-serif; }
+.skill-bar  { height:3px;background:rgba(255,255,255,.07);border-radius:3px;overflow:hidden; }
+.skill-progress { height:100%;border-radius:3px;width:0%;transition:width 1.3s cubic-bezier(.4,0,.2,1); }
+.skill-progress.cyan   { background:linear-gradient(90deg,var(--cyan),#0099cc); }
+.skill-progress.amber  { background:linear-gradient(90deg,var(--amber),#d97706); }
+.skill-progress.purple { background:linear-gradient(90deg,#a78bfa,#7c3aed); }
+.skill-progress.blue   { background:linear-gradient(90deg,#7dd3fc,#3b82f6); }
+.tags-wrap { display:flex;flex-wrap:wrap;gap:8px;margin-top:18px; }
+.tag {
+  font-size:12px;padding:5px 14px;border-radius:50px;
+  background:rgba(255,255,255,.04);border:1px solid var(--border);
+  color:#ccc;font-family:'Space Grotesk',sans-serif;font-weight:500;
+  transition:all .25s ease;
+}
+.tag:hover { border-color:var(--cyan);color:var(--cyan); }
+
+/* Links */
+.links-stack { display:flex;flex-direction:column;gap:12px; }
+.link-card {
+  display:flex;align-items:center;gap:16px;padding:18px 20px;
+  background:var(--card-bg);border:1px solid var(--border);
+  border-radius:18px;text-decoration:none;color:var(--white);
+  transition:all .3s ease;position:relative;overflow:hidden;
+}
+.link-card:hover,.link-card:active {
+  transform:translateX(6px);border-color:rgba(255,255,255,.2);
+  box-shadow:0 8px 30px rgba(0,0,0,.35);
+}
+.link-icon-wrap {
+  width:44px;height:44px;border-radius:12px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;flex-shrink:0;
+}
+.link-icon-wrap.yt { background:rgba(255,68,68,.14);color:#ff4444; }
+.link-icon-wrap.li { background:rgba(10,102,194,.14);color:#4b9fd4; }
+.link-info { flex:1; }
+.link-title { font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:600;margin-bottom:3px; }
+.link-sub   { font-size:12px;color:var(--muted); }
+.link-arrow { color:var(--muted);font-size:13px;transition:all .3s ease; }
+.link-card:hover .link-arrow,.link-card:active .link-arrow { transform:translateX(4px);color:var(--cyan); }
+
+/* Footer */
+footer { text-align:center;padding:36px 20px 60px;color:var(--muted);font-size:12px;letter-spacing:1px; }
+.footer-name { font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:700;color:var(--white);margin-bottom:10px; }
+.footer-dot { width:3px;height:3px;border-radius:50%;background:var(--cyan);display:inline-block;margin:0 8px;vertical-align:middle; }
+
+@keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+@media (prefers-reduced-motion:reduce) { *,*::before,*::after { animation-duration:.01ms !important;transition-duration:.01ms !important; } }
+</style>
 </head>
-
 <body>
 
+<div class="bg-glow"></div>
+<canvas id="bgCanvas"></canvas>
+
+<!-- ══ LOADER ══ -->
 <div id="loader">
+  <div class="loader-scan"></div>
+  <div class="loader-inner">
+    <div class="loader-photo-ring">
+      <img src="profile.jpg" class="loader-photo" alt="SC"
+           onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+      <div class="loader-photo-fallback" style="display:none;">SC</div>
+    </div>
+    <div class="loader-name">Shashidhar <span>Chavan</span></div>
+    <div class="loader-terminal" id="loaderTerminal"></div>
+    <div class="loader-bar-wrap">
+      <div class="loader-track"><div class="loader-fill" id="loaderFill"></div></div>
+      <div class="loader-pct" id="loaderPct">0%</div>
+    </div>
+  </div>
+</div>
 
-    <div class="loader-content">
-
-        <div class="loader-name">
-            <div class="logo-circle">
-                SC
-            </div>
-        </div>
-
-        <h1 id="loaderText">Initializing...</h1>
-
-        <div class="loader-bar">
-            <div class="loader-progress"></div>
-        </div>
-
-        <p id="loaderSubText">
-            Preparing Something Amazing...
-        </p>
-
+<!-- ══ HERO ══ -->
+<section class="hero">
+  <div class="hero-card">
+    <div class="profile-ring">
+      <img src="profile.jpg" class="profile-img" alt="Shashidhar Chavan"
+           onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+      <div class="profile-fallback" style="display:none;">SC</div>
     </div>
 
-</div>
+    <p class="hero-eyebrow">Software Engineer · Creator · Adventurer</p>
+    <h1 class="hero-name">Shashidhar<br><span class="accent">Chavan</span></h1>
+    <p class="hero-role">Azure AI &nbsp;·&nbsp; Full Stack &nbsp;·&nbsp; FNF India</p>
 
-<div class="background"></div>
+    <div id="typing-wrap">
+      <span id="typing"></span><span class="cursor"></span>
+    </div>
 
-<section class="hero">
+    <div class="hero-divider"></div>
 
-<div class="glass">
+    <div class="cta-row">
+      <a href="https://youtube.com/@shashi_on_wheelzz?si=O4barfDDg8ArzMwB" target="_blank" class="btn btn-yt">
+        <i class="fab fa-youtube"></i> YouTube
+      </a>
+      <a href="https://www.linkedin.com/in/shashidhar-chavan-37a9a7213" target="_blank" class="btn">
+        <i class="fab fa-linkedin"></i> LinkedIn
+      </a>
+    </div>
 
-<img src="profile.jpg" class="profile">
-
-<h1>
-
-Hi,
-
-I'm
-
-<span>Shashidhar Chavan</span>
-
-</h1>
-
-<h2>
-
- Code • Cars • Mountains
-
-</h2>
-
-<p id="typing"></p>
-
-<div class="buttons">
-
-<a href="https://youtube.com/@shashi_on_wheelzz?si=O4barfDDg8ArzMwB" target="_blank">
-
-<i class="fab fa-youtube"></i>
-
-YouTube
-
-</a>
-
-<a href="https://www.linkedin.com/in/shashidhar-chavan-37a9a7213" target="_blank">
-
-<i class="fab fa-linkedin"></i>
-
-LinkedIn
-
-</a>
-
-</div>
-    
-<div class="scroll">
-   <h4>Swipe Down for more</h4>
-    ↓
-</div>
-
-</div>
-
+    <!-- Scroll hint with animated arrow -->
+    <div class="scroll-hint">
+      <div class="scroll-pill">
+        <span>Swipe down for more</span>
+      </div>
+      <div class="scroll-arrow-anim">
+        <div class="sa-line"></div>
+        <div class="sa-chevrons">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+      </div>
+    </div>
+  </div>
 </section>
-<section class="about" data-aos="fade-up">
 
-<div class="about-container">
+<div class="section-divider"></div>
 
-<h4>WHO AM I</h4>
-
-<h2>Engineering Intelligent Experiences.</h2>
-
-<p>
-
-I am a <span>Software Engineer at FNF India Private Limited</span>, holding a Computer Science Engineering degree from KLE Dr. M.S. Sheshgiri College of Engineering and Technology.
-
-<br><br>
-
-I specialize in building <span>AI-powered full-stack solutions</span> using Microsoft Azure technologies. My expertise includes Azure AI Foundry, Azure OpenAI, Cognitive Services, Retrieval-Augmented Generation (RAG), knowledge-driven AI, Microsoft Bot Framework, and intelligent chatbot development.
-
-<br><br>
-
-I develop scalable web applications and REST APIs using <span>ASP.NET Core, Blazor, C#, and Python</span>, following clean architecture, SDLC best practices, Azure DevOps, and CI/CD methodologies.
-
-<br><br>
-
-What drives me most is taking complete ownership of challenges, solving real business problems through technology, and continuously growing in the fields of Artificial Intelligence, Cloud Computing, and Full Stack Engineering.
-
-</p>
-
-</div>
-
+<!-- ══ ABOUT ══ -->
+<section class="section" id="about">
+  <p class="section-eyebrow">Who I Am</p>
+  <h2 class="section-title">Engineering intelligent<br>experiences.</h2>
+  <div class="section-body">
+    <div class="about-card">
+      <p>
+        I'm a <span class="hl">Software Engineer at FNF India</span>, building AI-powered full-stack solutions on Microsoft Azure — from Azure AI Foundry and OpenAI integrations to RAG pipelines and intelligent chatbots.
+      </p>
+      <p>
+        My stack spans <span class="hl">ASP.NET Core, Blazor, C#, and Python</span>, built on clean architecture and shipped through Azure DevOps CI/CD pipelines. I hold a CSE degree from KLE Dr. M.S. Sheshgiri College of Engineering and Technology.
+      </p>
+      <p>
+        What drives me is <span class="hl-amber">full ownership</span> — taking a real business problem from zero to shipped, learning everything the problem demands, and making the solution genuinely smarter than before.
+      </p>
+    </div>
+  </div>
 </section>
-<script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
 
-<script src="script.js"></script>
+<div class="section-divider"></div>
 
+<!-- ══ PASSIONS ══ -->
+<section class="section" id="passions">
+  <p class="section-eyebrow">Life Beyond Code</p>
+  <h2 class="section-title">Three worlds,<br>one person.</h2>
+  <div class="section-body">
+    <div class="passion-grid">
+      <div class="passion-card tech">
+        <span class="passion-icon"><i class="fas fa-microchip"></i></span>
+        <div class="passion-title">AI Engineering</div>
+        <div class="passion-desc">RAG pipelines, Azure OpenAI, cognitive services — building systems that think.</div>
+      </div>
+      <div class="passion-card ai">
+        <span class="passion-icon"><i class="fas fa-layer-group"></i></span>
+        <div class="passion-title">Full Stack</div>
+        <div class="passion-desc">Blazor, ASP.NET, clean architecture — from DB to UI.</div>
+      </div>
+      <div class="passion-card cars full">
+        <span class="passion-icon"><i class="fas fa-car-side"></i></span>
+        <div class="passion-title">Cars &amp; the Road</div>
+        <div class="passion-desc">
+          Cars aren't just machines to me — they're a whole feeling. I find deep joy in learning every detail of a car, taking care of it like it's alive, and feeling the road come alive through the wheel. Whether it's a long highway drive at sunrise or obsessing over an engine note, cars are my moving meditation. I also run a YouTube channel, <a href="https://youtube.com/@shashi_on_wheelzz?si=O4barfDDg8ArzMwB" target="_blank" class="yt-link">Shashi on Wheelzz</a>, where I share that passion.
+        </div>
+      </div>
+      <div class="passion-card mountains full">
+        <span class="passion-icon"><i class="fas fa-mountain-sun"></i></span>
+        <div class="passion-title">Mountains &amp; Trekking</div>
+        <div class="passion-desc">
+          There's something that resets completely when you're above the treeline. I love trekking — the silence of high altitudes, the physical grind, and the reward of a view that no screen can replicate. Mountains teach you that the only way forward is one step at a time. It's the same mindset I bring to difficult engineering problems.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- ══ SKILLS ══ -->
+<section class="section" id="skills">
+  <p class="section-eyebrow">What I Work With</p>
+  <h2 class="section-title">The stack<br>behind the work.</h2>
+  <div class="section-body">
+    <div class="skills-wrap">
+      <div class="skill-item" data-skill>
+        <div class="skill-top"><span class="skill-name">Azure AI &amp; OpenAI</span><span class="skill-pct">92%</span></div>
+        <div class="skill-bar"><div class="skill-progress cyan" data-width="92"></div></div>
+      </div>
+      <div class="skill-item" data-skill>
+        <div class="skill-top"><span class="skill-name">ASP.NET Core · Blazor · C#</span><span class="skill-pct">88%</span></div>
+        <div class="skill-bar"><div class="skill-progress blue" data-width="88"></div></div>
+      </div>
+      <div class="skill-item" data-skill>
+        <div class="skill-top"><span class="skill-name">Python · REST APIs</span><span class="skill-pct">80%</span></div>
+        <div class="skill-bar"><div class="skill-progress amber" data-width="80"></div></div>
+      </div>
+      <div class="skill-item" data-skill>
+        <div class="skill-top"><span class="skill-name">Azure DevOps · CI/CD</span><span class="skill-pct">85%</span></div>
+        <div class="skill-bar"><div class="skill-progress purple" data-width="85"></div></div>
+      </div>
+    </div>
+    <div class="tags-wrap">
+      <span class="tag">RAG Pipelines</span>
+      <span class="tag">Bot Framework</span>
+      <span class="tag">Cognitive Services</span>
+      <span class="tag">Azure AI Foundry</span>
+      <span class="tag">Clean Architecture</span>
+      <span class="tag">SDLC</span>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- ══ LINKS ══ -->
+<section class="section" id="links">
+  <p class="section-eyebrow">Find Me Online</p>
+  <h2 class="section-title">Let's connect.</h2>
+  <div class="section-body">
+    <div class="links-stack">
+      <a href="https://youtube.com/@shashi_on_wheelzz?si=O4barfDDg8ArzMwB" target="_blank" class="link-card">
+        <div class="link-icon-wrap yt"><i class="fab fa-youtube"></i></div>
+        <div class="link-info">
+          <div class="link-title">Shashi on Wheelzz</div>
+          <div class="link-sub">Cars, drives &amp; road life on YouTube</div>
+        </div>
+        <i class="fas fa-arrow-right link-arrow"></i>
+      </a>
+      <a href="https://www.linkedin.com/in/shashidhar-chavan-37a9a7213" target="_blank" class="link-card">
+        <div class="link-icon-wrap li"><i class="fab fa-linkedin"></i></div>
+        <div class="link-info">
+          <div class="link-title">LinkedIn</div>
+          <div class="link-sub">Professional work &amp; engineering journey</div>
+        </div>
+        <i class="fas fa-arrow-right link-arrow"></i>
+      </a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-name">Shashidhar Chavan</div>
+  <span>Code</span><span class="footer-dot"></span>
+  <span>Cars</span><span class="footer-dot"></span>
+  <span>Mountains</span>
+  <br><br>
+  <span style="font-size:11px;">Built with intention · 2025</span>
+</footer>
+
+<script>
+/* ══════════════════════════════════════
+   CANVAS BACKGROUND — floating symbols
+══════════════════════════════════════ */
+(function() {
+  const canvas = document.getElementById('bgCanvas');
+  const ctx = canvas.getContext('2d');
+
+  function resize() {
+    canvas.width  = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  // Symbol pool: code, cars, mountains, cloud
+  const SYMBOLS = [
+    '{ }', '</>', '( )', '=>', '[]', '#', '//','</>',
+    '⛰', '🏔', '⛺', '🚗', '🏎', '⚙', '☁', '◈',
+    'AI', 'if', 'fn', '&&', '||', '/*', '*/'
+  ];
+
+  const COLORS = [
+    'rgba(0,212,255,',
+    'rgba(245,158,11,',
+    'rgba(100,200,255,',
+    'rgba(168,139,250,',
+    'rgba(0,255,136,'
+  ];
+
+  const COUNT = Math.min(28, Math.floor(window.innerWidth / 14));
+
+  const particles = Array.from({length: COUNT}, () => ({
+    x: Math.random() * window.innerWidth,
+    y: Math.random() * window.innerHeight,
+    sym: SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)],
+    color: COLORS[Math.floor(Math.random() * COLORS.length)],
+    size: 10 + Math.random() * 10,
+    alpha: 0.04 + Math.random() * 0.09,
+    vx: (Math.random() - 0.5) * 0.22,
+    vy: -0.12 - Math.random() * 0.18,
+    wobble: Math.random() * Math.PI * 2,
+    wobbleSpeed: 0.008 + Math.random() * 0.012,
+  }));
+
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    particles.forEach(p => {
+      p.wobble += p.wobbleSpeed;
+      p.x += p.vx + Math.sin(p.wobble) * 0.18;
+      p.y += p.vy;
+      if (p.y < -30) { p.y = canvas.height + 20; p.x = Math.random() * canvas.width; }
+      if (p.x < -40) p.x = canvas.width + 20;
+      if (p.x > canvas.width + 40) p.x = -20;
+
+      ctx.save();
+      ctx.globalAlpha = p.alpha;
+      ctx.fillStyle = p.color + '1)';
+      ctx.font = `${p.size}px 'Share Tech Mono', monospace`;
+      ctx.fillText(p.sym, p.x, p.y);
+      ctx.restore();
+    });
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+/* ══════════════════════════════════════
+   LOADER — terminal boot sequence
+══════════════════════════════════════ */
+const termLines = [
+  '> Booting portfolio.exe...',
+  '> Loading Azure AI modules... OK',
+  '> Mounting car passion data... OK',
+  '> Syncing mountain memories... OK',
+  '> Compiling full-stack skills...',
+  '> All systems GO. Welcome 🚀',
+];
+
+const terminal  = document.getElementById('loaderTerminal');
+const loaderFill = document.getElementById('loaderFill');
+const loaderPct  = document.getElementById('loaderPct');
+const loader     = document.getElementById('loader');
+const TOTAL      = 4000;
+
+// Render terminal lines progressively
+termLines.forEach((line, i) => {
+  const el = document.createElement('div');
+  el.className = 'tline';
+  el.textContent = line;
+  terminal.appendChild(el);
+  setTimeout(() => el.classList.add('show'), 200 + i * 600);
+});
+
+// Progress bar
+let pct = 0;
+const fillTimer = setInterval(() => {
+  pct = Math.min(pct + 1.6, 100);
+  loaderFill.style.width = pct + '%';
+  loaderPct.textContent  = Math.round(pct) + '%';
+  if (pct >= 100) clearInterval(fillTimer);
+}, TOTAL / 62);
+
+setTimeout(() => {
+  loader.classList.add('hidden');
+  setTimeout(() => { loader.style.display = 'none'; }, 1000);
+}, TOTAL + 300);
+
+/* ══════════════════════════════════════
+   TYPING EFFECT
+══════════════════════════════════════ */
+const words = [
+  'Building AI Experiences',
+  'Full Stack Developer',
+  'Azure Cloud Enthusiast',
+  'Mountain Trekker 🏔',
+  'Car Enthusiast 🚗',
+  'Creating Intelligent Apps'
+];
+let wIdx = 0, cIdx = 0, del = false;
+
+function type() {
+  const el = document.getElementById('typing');
+  if (!el) return;
+  const cur = words[wIdx];
+  cIdx += del ? -1 : 1;
+  el.textContent = cur.substring(0, cIdx);
+  if (!del && cIdx === cur.length) { del = true; setTimeout(type, 1500); return; }
+  if (del && cIdx === 0)          { del = false; wIdx = (wIdx + 1) % words.length; }
+  setTimeout(type, del ? 48 : 100);
+}
+setTimeout(type, TOTAL + 700);
+
+/* ══════════════════════════════════════
+   SCROLL REVEAL
+══════════════════════════════════════ */
+const obs = new IntersectionObserver(
+  entries => entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('in-view'); }),
+  { threshold: 0.1 }
+);
+document.querySelectorAll('.section').forEach(s => obs.observe(s));
+
+/* ══════════════════════════════════════
+   SKILL BARS
+══════════════════════════════════════ */
+const skillObs = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.querySelectorAll('.skill-progress').forEach(bar => {
+        setTimeout(() => { bar.style.width = bar.getAttribute('data-width') + '%'; }, 150);
+      });
+      skillObs.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.25 });
+document.querySelectorAll('[data-skill]').forEach(s => skillObs.observe(s));
+</script>
 </body>
-
 </html>
